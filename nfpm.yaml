@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=https://nfpm.goreleaser.com/static/schema.json
+---
+name: tedge-snap-plugin
+arch: all
+platform: linux
+version: ${SEMVER}
+section: misc
+priority: optional
+maintainer: Community <community@thin-edge.io>
+description: thin-edge.io snap software management plugin
+vendor: thin-edge.io
+homepage: https://github.com/thin-edge/tedge-snap-plugin
+license: Apache License 2.0
+apk:
+  # Use noarch instead of "all"
+  arch: noarch
+contents:
+  - src: ./src/sm-plugin/*
+    dst: /usr/bin/
+    file_info:
+      mode: 0755
+      owner: tedge
+      group: tedge
+  
+  - src: /usr/bin/tedge-snap-plugin
+    dst: /etc/tedge/sm-plugins/snap
+    type: symlink

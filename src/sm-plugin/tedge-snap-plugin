@@ -1,0 +1,137 @@
+#!/bin/sh
+set -e
+
+EXIT_OK=0
+EXIT_USAGE=1
+EXIT_FAILURE=2
+# EXIT_RETRY=3
+
+SNAP_INSTALL_OPTIONS=
+# SNAP_INSTALL_OPTIONS="--dangerous"
+SNAP_REMOVE_OPTIONS=--purge
+
+usage() {
+    cat << EOF
+USAGE
+    $0 plugin for thin-edge.io
+
+    $0 <COMMAND> [MODULE_NAME] [--module-version [VERSION]] [--file [FILE]]
+
+    $0 list
+    $0 prepare
+    $0 install <MODULE_NAME> [--module-version [VERSION]] [--file [FILE]]
+    $0 remove <MODULE_NAME> [--module-version [VERSION]]
+    $0 finalize
+EOF
+}
+
+MODULE_NAME=
+MODULE_VERSION=
+FILE=
+
+log() { echo "$@" >&2; }
+
+if [ $# -lt 1 ]; then
+    log "Invalid number of positional arguments"
+    usage
+    exit "$EXIT_USAGE"
+fi
+
+# argument parsing
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --module-version)
+        MODULE_VERSION="$2"
+        shift
+        ;;
+    --file)
+        FILE="$2"
+        shift
+        ;;
+    -h|--help)
+        usage
+        exit "$EXIT_USAGE"
+        ;;
+    --*|-*)
+        log "Unknown option $1"
+        exit "$EXIT_USAGE"
+        ;;
+    *)
+        if [ -z "$COMMAND" ]; then
+            COMMAND="$1"
+        elif [ -z "$MODULE_NAME" ]; then
+            MODULE_NAME="$1"
+        fi
+      ;;
+  esac
+  shift
+done
+
+command_exists() {
+    command -V "$1" >/dev/null 2>&1
+}
+
+case "$COMMAND" in
+    prepare)
+        snap refresh
+        ;;
+    list)
+        # The most basic command supported by sm plugins is `list` command.
+        # Command is used to recognise plugin as well as to list current list of software packages installed using this plugin.
+        # For `snap` the following interface could be used: `snap list` as per https://snapcraft.io/docs/getting-started.
+        # The agent expects the plugin to return the list as `tab (\t)` separated values on stdout.
+
+        # API spec: https://thin-edge.github.io/thin-edge.io-specs/software-management/plugin-api.html#the-list-command
+
+        # snap list stdout:
+        # Name   Version    Rev    Tracking       Publisher   Notes
+        # core   16-2.54.2  12600  latest/stable  canonical✓  core
+
+
+        # Agent expected:
+        # `core    16-2.54.2`
+        if ! command_exists snap; then
+            log "The snap command was not found! This is very unexpected" >&2
+            exit "$EXIT_USAGE"
+        fi
+
+        snap list | awk -F' ' 'NR>1 {printf "%s\t%s\n", $1, $2}'
+        ;;
+    install)
+        if [ -n "$FILE" ]; then
+            log "Installing snap (from file): $FILE"
+
+            # shellcheck disable=SC2086
+            snap install "$FILE" $SNAP_INSTALL_OPTIONS || exit "$EXIT_FAILURE"
+        else
+            MODULE="$MODULE_NAME"
+            MODULE_ARGS=
+            if [ -n "$MODULE_VERSION" ] && [ "$MODULE_VERSION" != "latest" ]; then
+                MODULE_ARGS="--channel=$MODULE_VERSION"
+            fi
+
+            log "Installing snap (by name): $MODULE $MODULE_ARGS $SNAP_INSTALL_OPTIONS"
+            # shellcheck disable=SC2086
+            snap install "$MODULE" $MODULE_ARGS $SNAP_INSTALL_OPTIONS || exit "$EXIT_FAILURE"
+        fi
+        ;;
+    remove)
+        # Removing
+        # `snap`'s `remove` command can be used to uninstall command form the device.
+        # We use `--purge` switch to force full removal of the `snap` resources.
+        # shellcheck disable=SC2086
+        snap remove "$MODULE_NAME" $SNAP_REMOVE_OPTIONS || exit "$EXIT_FAILURE"
+        ;;
+    update-list)
+        # Not supported, use remove install and remove instead
+        exit "$EXIT_USAGE"
+        ;;
+    finalize)
+        ;;
+    *)
+        log "Unsupported command: $COMMAND"
+        exit 1
+        ;;
+esac
+
+exit "$EXIT_OK"
