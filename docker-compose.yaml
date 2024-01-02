@@ -16,7 +16,7 @@ services:
       - /run
       - /run/lock
       - /tmp
-    cgroup: host
+    cgroup: private
     volumes:
       - /sys/fs/cgroup/freeipa.scope:/sys/fs/cgroup:rw
       - /lib/modules:/lib/modules:ro
