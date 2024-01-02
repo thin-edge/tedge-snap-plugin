@@ -22,7 +22,7 @@ The following linux package formats are provided on the releases page and also i
 
 |Operating System|Repository link|
 |--|--|
-|Ubuntu|[![Latest version of 'tedge-snap-plugin' @ Cloudsmith](https://api-prd.cloudsmith.io/v1/badges/version/thinedge/community/deb/tedge-snap-plugin/latest/a=noarch;d=any-distro%252Fany-version;t=binary/?render=true&show_latest=true)](https://cloudsmith.io/~thinedge/repos/community/packages/detail/deb/tedge-snap-plugin/latest/a=noarch;d=any-distro%252Fany-version;t=binary/)|
+|Ubuntu|[![Latest version of 'tedge-snap-plugin' @ Cloudsmith](https://api-prd.cloudsmith.io/v1/badges/version/thinedge/community/deb/tedge-snap-plugin/latest/a=all;d=any-distro%252Fany-version;t=binary/?render=true&show_latest=true)](https://cloudsmith.io/~thinedge/repos/community/packages/detail/deb/tedge-snap-plugin/latest/a=all;d=any-distro%252Fany-version;t=binary/)|
 
 
 ### What will be deployed to the device?
