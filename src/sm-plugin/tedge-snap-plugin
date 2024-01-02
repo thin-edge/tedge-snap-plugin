@@ -7,7 +7,8 @@ EXIT_FAILURE=2
 # EXIT_RETRY=3
 
 SNAP_INSTALL_OPTIONS=
-# SNAP_INSTALL_OPTIONS="--dangerous"
+# Files from the cloud are trusted, so the --dangerous can be alllowed
+SNAP_INSTALL_FILE_OPTIONS="--dangerous"
 SNAP_REMOVE_OPTIONS=--purge
 
 usage() {
@@ -102,7 +103,7 @@ case "$COMMAND" in
             log "Installing snap (from file): $FILE"
 
             # shellcheck disable=SC2086
-            snap install "$FILE" $SNAP_INSTALL_OPTIONS || exit "$EXIT_FAILURE"
+            snap install "$FILE" $SNAP_INSTALL_FILE_OPTIONS || exit "$EXIT_FAILURE"
         else
             MODULE="$MODULE_NAME"
             MODULE_ARGS=
